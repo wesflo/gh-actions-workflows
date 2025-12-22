@@ -2,9 +2,6 @@ name: publish-github-packages
 
 on:
   workflow_call:
-    secrets:
-      NODE_AUTH_TOKEN:
-        required: true
     inputs:
       node_version:
         type: string
@@ -18,14 +15,24 @@ on:
         type: string
         required: false
         default: "npm ci"
+
+      # build control
+      build_mode:
+        type: string
+        required: false
+        default: "build"
+        description: "build | skip"
+
       build_command:
         type: string
         required: false
         default: "npm run build"
+
       publish_command:
         type: string
         required: false
         default: "npm publish"
+
       npm_scope:
         type: string
         required: true
@@ -34,6 +41,20 @@ on:
         type: string
         required: false
         default: "https://npm.pkg.github.com"
+
+      # optional: pull dist from artifact before publish
+      download_artifact:
+        type: boolean
+        required: false
+        default: false
+      artifact_name:
+        type: string
+        required: false
+        default: "build-output"
+
+    secrets:
+      NODE_AUTH_TOKEN:
+        required: true
 
 permissions:
   contents: read
@@ -62,7 +83,15 @@ jobs:
       - name: Install
         run: ${{ inputs.install_command }}
 
+      - name: Download build artifact
+        if: ${{ inputs.download_artifact }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ${{ inputs.workdir }}
+
       - name: Build
+        if: ${{ inputs.build_mode == 'build' }}
         run: ${{ inputs.build_command }}
 
       - name: Publish
