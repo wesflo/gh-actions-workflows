@@ -2,6 +2,9 @@ name: publish-github-packages
 
 on:
   workflow_call:
+    secrets:
+      NODE_AUTH_TOKEN:
+        required: true
     inputs:
       node_version:
         type: string
@@ -31,9 +34,6 @@ on:
         type: string
         required: false
         default: "https://npm.pkg.github.com"
-    secrets:
-      NODE_AUTH_TOKEN:
-        required: true
 
 permissions:
   contents: read
