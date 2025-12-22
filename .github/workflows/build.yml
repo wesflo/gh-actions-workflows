@@ -1,0 +1,69 @@
+name: build
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        type: string
+        required: false
+        default: "20"
+      workdir:
+        type: string
+        required: false
+        default: "."
+      install_command:
+        type: string
+        required: false
+        default: "npm ci"
+      build_command:
+        type: string
+        required: false
+        default: "npm run build"
+      iife_command:
+        type: string
+        required: false
+        default: ""
+      upload_artifacts:
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.workdir }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.workdir }}/package-lock.json
+
+      - name: Install
+        run: ${{ inputs.install_command }}
+
+      - name: Build
+        run: ${{ inputs.build_command }}
+
+      - name: Build (IIFE)
+        if: ${{ inputs.iife_command != '' }}
+        run: ${{ inputs.iife_command }}
+
+      - name: Upload artifacts
+        if: ${{ inputs.upload_artifacts }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            ${{ inputs.workdir }}/dist
+            ${{ inputs.workdir }}/dist-iife

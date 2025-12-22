@@ -1,0 +1,71 @@
+name: publish-github-packages
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        type: string
+        required: false
+        default: "20"
+      workdir:
+        type: string
+        required: false
+        default: "."
+      install_command:
+        type: string
+        required: false
+        default: "npm ci"
+      build_command:
+        type: string
+        required: false
+        default: "npm run build"
+      publish_command:
+        type: string
+        required: false
+        default: "npm publish"
+      npm_scope:
+        type: string
+        required: true
+        description: "Your npm scope, e.g. @wesflo"
+      registry_url:
+        type: string
+        required: false
+        default: "https://npm.pkg.github.com"
+    secrets:
+      NODE_AUTH_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.workdir }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (GitHub Packages)
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.workdir }}/package-lock.json
+          registry-url: ${{ inputs.registry_url }}
+          scope: ${{ inputs.npm_scope }}
+
+      - name: Install
+        run: ${{ inputs.install_command }}
+
+      - name: Build
+        run: ${{ inputs.build_command }}
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+        run: ${{ inputs.publish_command }}

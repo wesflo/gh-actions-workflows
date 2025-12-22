@@ -1,0 +1,41 @@
+name: _node-setup
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        type: string
+        required: false
+        default: "20"
+      workdir:
+        type: string
+        required: false
+        default: "."
+      registry_url:
+        type: string
+        required: false
+        default: ""
+      scope:
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  node-setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.workdir }}/package-lock.json
+          registry-url: ${{ inputs.registry_url }}
+          scope: ${{ inputs.scope }}

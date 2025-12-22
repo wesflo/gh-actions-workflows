@@ -1,0 +1,48 @@
+name: test-coverage
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        type: string
+        required: false
+        default: "20"
+      workdir:
+        type: string
+        required: false
+        default: "."
+      install_command:
+        type: string
+        required: false
+        default: "npm ci"
+      test_command:
+        type: string
+        required: false
+        default: "npm run test:c"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.workdir }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.workdir }}/package-lock.json
+
+      - name: Install
+        run: ${{ inputs.install_command }}
+
+      - name: Test (coverage)
+        run: ${{ inputs.test_command }}
