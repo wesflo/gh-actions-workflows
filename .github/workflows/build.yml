@@ -27,6 +27,10 @@ on:
         type: boolean
         required: false
         default: false
+      artifact_name:
+        type: string
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -63,7 +67,7 @@ jobs:
         if: ${{ inputs.upload_artifacts }}
         uses: actions/upload-artifact@v4
         with:
-          name: build-output
+          name: ${{ inputs.artifact_name != '' && inputs.artifact_name || format('build-output-{0}', github.job) }}
           path: |
             ${{ inputs.workdir }}/dist
             ${{ inputs.workdir }}/dist-iife
