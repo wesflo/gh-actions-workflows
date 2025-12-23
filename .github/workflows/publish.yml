@@ -99,8 +99,13 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
-      - name: Debug npm scope registry
+      - name: Debug npm scope and registry
         run: npm config get @wesflo:registry
+
+      - name: Debug npm scope registry
+        run: |
+          echo "npm_scope: ${{ inputs.npm_scope }}"
+          echo "npm_scope: ${ inputs.npm_scope }"
 
       - name: Debug npm registry
         run: npm config get registry
