@@ -31,10 +31,6 @@ on:
         type: string
         required: false
         default: false
-      fetch_depth:
-        type: number
-        required: false
-        default: 0
 
 permissions:
   contents: read
@@ -47,12 +43,11 @@ jobs:
         working-directory: ${{ inputs.workdir }}
 
     steps:
-      - name: Node Setup
-        uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup.yml@main
+      - name: Node setup
+        uses: wesflo/gh-actions-workflows/.github/actions/_node-setup@main
         with:
           node_version: ${{ inputs.node_version }}
           workdir: ${{ inputs.workdir }}
-          install_command: ${{ inputs.install_command }}
           fetch_depth: ${{ inputs.fetch_depth }}
 
       - name: Build

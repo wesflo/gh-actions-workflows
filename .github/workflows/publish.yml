@@ -19,10 +19,6 @@ on:
         type: string
         required: true
         description: "e.g. @wesflo"
-      fetch_depth:
-        type: number
-        required: false
-        default: 0
     secrets:
       NODE_AUTH_TOKEN:
         required: true
@@ -36,13 +32,12 @@ jobs:
         working-directory: ${{ inputs.workdir }}
 
     steps:
-      - name: Node Setup
-        uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup.yml@main
+      - name: Node setup
+        uses: wesflo/gh-actions-workflows/.github/actions/_node-setup@main
         with:
           node_version: ${{ inputs.node_version }}
           workdir: ${{ inputs.workdir }}
-          install_command: ${{ inputs.install_command }}
-          fetch_depth: ${{ inputs.fetch_depth }}
+          fetch_depth: "0"
 
       - name: Determine bump from PR labels
         id: bump
