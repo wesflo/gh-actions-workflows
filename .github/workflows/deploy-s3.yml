@@ -25,6 +25,9 @@ on:
         type: string
         required: false
         default: "public,max-age=300"
+      environment_name:
+        type: string
+        required: true
     secrets:
       aws_role_arn:
         required: true
@@ -32,6 +35,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment_name }}
     permissions:
       id-token: write
       contents: read
