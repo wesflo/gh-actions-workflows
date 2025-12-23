@@ -113,7 +113,7 @@ jobs:
       - name: Publish (GitHub Packages)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-        run: npm publish --dry-run
+        run: npm publish
 
       - name: Commit + tag + push (only after successful publish)
         run: |
