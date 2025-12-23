@@ -45,7 +45,7 @@ jobs:
     with:
       node_version: ${{ inputs.node_version }}
       workdir: ${{ inputs.workdir }}
-      fetch-depth: ${{ inputs.fetch_depth }}
+      fetch_depth: ${{ inputs.fetch_depth }}
 
   build:
     runs-on: ubuntu-latest
