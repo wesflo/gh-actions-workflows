@@ -11,11 +11,11 @@ on:
         type: string
         required: false
         default: "."
-      registry_url:
+      npm_registry:
         type: string
         required: false
         default: ""
-      scope:
+      npm_scope:
         type: string
         required: false
         default: ""
@@ -47,8 +47,8 @@ jobs:
           node-version: ${{ inputs.node_version }}
           cache: npm
           cache-dependency-path: ${{ inputs.workdir }}/package-lock.json
-          registry-url: ${{ inputs.registry_url }}
-          scope: ${{ inputs.scope }}
+          registry-url: ${{ inputs.npm_registry }}
+          scope: ${{ inputs.npm_scope }}
 
       - name: Install
         run: ${{ inputs.install_command }}
