@@ -23,11 +23,6 @@ on:
       NODE_AUTH_TOKEN:
         required: true
 
-permissions:
-  contents: write
-  packages: write
-  pull-requests: read
-
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -73,18 +68,6 @@ jobs:
             core.info(`Bump: ${bump}`);
             core.setOutput('value', bump);
 
-      - name: Setup Node (GitHub Packages)
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node_version }}
-          cache: npm
-          cache-dependency-path: ${{ inputs.workdir }}/package-lock.json
-          registry-url: "https://npm.pkg.github.com"
-          scope: ${{ inputs.npm_scope }}
-
-      - name: Install
-        run: ${{ inputs.install_command }}
-
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
@@ -115,5 +98,3 @@ jobs:
           git push
           git push --tags
 
-      - name: IIFE deploy (placeholder)
-        run: echo "IIFE deployment would run here"
