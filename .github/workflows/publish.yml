@@ -88,10 +88,27 @@ jobs:
       - name: Build (iife)
         run: npm run build:iife
 
+      - name: Debug NODE_AUTH_TOKEN length
+        shell: bash
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "NODE_AUTH_TOKEN is NOT set"
+          else
+            echo "NODE_AUTH_TOKEN length: ${#NODE_AUTH_TOKEN}"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+
+      - name: Debug npm scope registry
+        run: npm config get @wesflo:registry
+
+      - name: Debug npm registry
+        run: npm config get registry
+
       - name: Publish (GitHub Packages)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-        run: npm publish
+        run: npm publish --dry-run
 
       - name: Commit + tag + push (only after successful publish)
         run: |
