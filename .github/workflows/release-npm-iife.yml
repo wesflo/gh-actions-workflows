@@ -17,11 +17,11 @@ on:
 
       preprod_bucket:
         type: string
-        required: true
+        required: false
         default: "wesflo-preprod-demo"
       prod_bucket:
         type: string
-        required: true
+        required: false
         default: "wesflo-prod-demo"
 
       npm_scope:
