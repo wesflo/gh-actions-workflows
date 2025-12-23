@@ -28,22 +28,22 @@ on:
         required: true
 
 jobs:
-  node-setup:
-    uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup.yml@main
-    with:
-      node_version: ${{ inputs.node_version }}
-      workdir: ${{ inputs.workdir }}
-      fetch_depth: ${{ inputs.fetch_depth }}
-
   publish:
     runs-on: ubuntu-latest
     environment: release
-    needs: node-setup
     defaults:
       run:
         working-directory: ${{ inputs.workdir }}
 
     steps:
+      - name: Node Setup
+        uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup.yml@main
+        with:
+          node_version: ${{ inputs.node_version }}
+          workdir: ${{ inputs.workdir }}
+          install_command: ${{ inputs.install_command }}
+          fetch_depth: ${{ inputs.fetch_depth }}
+
       - name: Determine bump from PR labels
         id: bump
         uses: actions/github-script@v7

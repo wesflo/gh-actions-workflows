@@ -40,21 +40,21 @@ permissions:
   contents: read
 
 jobs:
-  node-setup:
-    uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup.yml@main
-    with:
-      node_version: ${{ inputs.node_version }}
-      workdir: ${{ inputs.workdir }}
-      fetch_depth: ${{ inputs.fetch_depth }}
-
   build:
     runs-on: ubuntu-latest
-    needs: node-setup
     defaults:
       run:
         working-directory: ${{ inputs.workdir }}
 
     steps:
+      - name: Node Setup
+        uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup.yml@main
+        with:
+          node_version: ${{ inputs.node_version }}
+          workdir: ${{ inputs.workdir }}
+          install_command: ${{ inputs.install_command }}
+          fetch_depth: ${{ inputs.fetch_depth }}
+
       - name: Build
         run: ${{ inputs.build_command }}
 
