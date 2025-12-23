@@ -31,13 +31,16 @@ on:
         type: string
         required: false
         default: false
-
+      environment_name:
+        type: string
+        required: true
 permissions:
   contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment_name }}
     defaults:
       run:
         working-directory: ${{ inputs.workdir }}
