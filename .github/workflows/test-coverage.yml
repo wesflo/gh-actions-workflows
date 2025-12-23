@@ -24,6 +24,12 @@ permissions:
   contents: read
 
 jobs:
+  node-setup:
+    uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup@main
+    with:
+      node_version: ${{ inputs.node_version }}
+      workdir: ${{ inputs.workdir }}
+
   test:
     runs-on: ubuntu-latest
     defaults:
@@ -31,11 +37,5 @@ jobs:
         working-directory: ${{ inputs.workdir }}
 
     steps:
-      - name: Node Setup
-        uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup@main
-        with:
-          node_version: ${{ inputs.node_version }}
-          workdir: ${{ inputs.workdir }}
-
       - name: Test (coverage)
         run: ${{ inputs.test_command }}

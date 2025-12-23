@@ -24,6 +24,13 @@ on:
         required: true
 
 jobs:
+  node-setup:
+    uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup@main
+    with:
+      node_version: ${{ inputs.node_version }}
+      workdir: ${{ inputs.workdir }}
+      fetch-depth: 0
+
   publish:
     runs-on: ubuntu-latest
     environment: release
@@ -32,13 +39,6 @@ jobs:
         working-directory: ${{ inputs.workdir }}
 
     steps:
-      - name: Node Setup
-        uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup@main
-        with:
-          node_version: ${{ inputs.node_version }}
-          workdir: ${{ inputs.workdir }}
-          fetch-depth: 0
-
       - name: Determine bump from PR labels
         id: bump
         uses: actions/github-script@v7
