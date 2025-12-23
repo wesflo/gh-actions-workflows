@@ -31,6 +31,10 @@ on:
         type: string
         required: false
         default: false
+      fetch_depth:
+        type: number
+        required: false
+        default: 0
 
 permissions:
   contents: read
@@ -41,9 +45,11 @@ jobs:
     with:
       node_version: ${{ inputs.node_version }}
       workdir: ${{ inputs.workdir }}
+      fetch-depth: ${{ inputs.fetch_depth }}
 
   build:
     runs-on: ubuntu-latest
+    needs: node-setup
     defaults:
       run:
         working-directory: ${{ inputs.workdir }}

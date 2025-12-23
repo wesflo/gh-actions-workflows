@@ -19,6 +19,10 @@ on:
         type: string
         required: true
         description: "e.g. @wesflo"
+      fetch_depth:
+        type: number
+        required: false
+        default: 0
     secrets:
       NODE_AUTH_TOKEN:
         required: true
@@ -29,11 +33,12 @@ jobs:
     with:
       node_version: ${{ inputs.node_version }}
       workdir: ${{ inputs.workdir }}
-      fetch-depth: 0
+      fetch-depth: ${{ inputs.fetch_depth }}
 
   publish:
     runs-on: ubuntu-latest
     environment: release
+    needs: node-setup
     defaults:
       run:
         working-directory: ${{ inputs.workdir }}
