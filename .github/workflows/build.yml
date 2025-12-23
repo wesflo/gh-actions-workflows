@@ -37,7 +37,7 @@ permissions:
 
 jobs:
   node-setup:
-    uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup@main
+    uses: wesflo/gh-actions-workflows/.github/workflows/_node-setup.yml@main
     with:
       node_version: ${{ inputs.node_version }}
       workdir: ${{ inputs.workdir }}
