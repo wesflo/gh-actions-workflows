@@ -14,7 +14,7 @@ on:
       install_command:
         type: string
         required: false
-        default: "npm ci"
+        default: "npm ci --prefer-offline"
       build_command:
         type: string
         required: false
@@ -43,25 +43,14 @@ jobs:
         working-directory: ${{ inputs.workdir }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Node Setup
+        uses: wesflo/gh-actions-workflows/.github/actions/_node-setup@main
         with:
-          node-version: ${{ inputs.node_version }}
-          cache: npm
-          cache-dependency-path: ${{ inputs.workdir }}/package-lock.json
-
-      - name: Install
-        run: ${{ inputs.install_command }}
+          node_version: ${{ inputs.node_version }}
+          workdir: ${{ inputs.workdir }}
 
       - name: Build
         run: ${{ inputs.build_command }}
-
-      - name: Build (IIFE)
-        if: ${{ inputs.iife_command != '' }}
-        run: ${{ inputs.iife_command }}
 
       - name: Upload artifacts
         if: ${{ inputs.upload_artifacts }}

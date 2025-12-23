@@ -19,6 +19,14 @@ on:
         type: string
         required: false
         default: ""
+      install_command:
+        type: string
+        required: false
+        default: "npm ci --prefer-offline"
+      fetch_depth:
+        type: number
+        required: false
+        default: 0
 
 permissions:
   contents: read
@@ -30,6 +38,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ inputs.fetch_depth }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -39,3 +49,6 @@ jobs:
           cache-dependency-path: ${{ inputs.workdir }}/package-lock.json
           registry-url: ${{ inputs.registry_url }}
           scope: ${{ inputs.scope }}
+
+      - name: Install
+        run: ${{ inputs.install_command }}
