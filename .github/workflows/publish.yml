@@ -105,7 +105,6 @@ jobs:
       - name: Debug npm scope registry
         run: |
           echo "npm_scope: ${{ inputs.npm_scope }}"
-          echo "npm_scope: ${ inputs.npm_scope }"
 
       - name: Debug npm registry
         run: npm config get registry
