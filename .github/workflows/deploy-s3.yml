@@ -1,0 +1,63 @@
+name: Deploy to S3
+
+on:
+  workflow_call:
+    inputs:
+      workdir:
+        type: string
+        required: false
+        default: "."
+      artifact_name:
+        type: string
+        required: true
+      dist_dir:
+        type: string
+        required: false
+        default: "dist"
+      bucket:
+        type: string
+        required: true
+      region:
+        type: string
+        required: false
+        default: "eu-central-1"
+      cache_control:
+        type: string
+        required: false
+        default: "public,max-age=300"
+    secrets:
+      aws_role_arn:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ${{ inputs.dist_dir }}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.aws_role_arn }}
+          aws-region: ${{ inputs.region }}
+
+      - name: Set S3 target dir from repo name
+        shell: bash
+        run: |
+          S3_TARGET_DIR="${GITHUB_REPOSITORY##*/}"
+          echo "S3_TARGET_DIR=$S3_TARGET_DIR" >> "$GITHUB_ENV"
+          echo "S3 target dir: $S3_TARGET_DIR"
+
+      - name: Sync to S3
+        run: |
+          aws s3 sync "${{ inputs.dist_dir }}" "s3://${{ inputs.bucket }}/${{ env.S3_TARGET_DIR }}" \
+            --delete \
+            --cache-control "${{ inputs.cache_control }}"
