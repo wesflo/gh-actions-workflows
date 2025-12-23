@@ -1,0 +1,148 @@
+name: Relase NPM Bundle and IIFE
+on:
+  workflow_call:
+    inputs:
+      workdir:
+        type: string
+        required: false
+        default: "."
+      node_version:
+        type: string
+        required: false
+        default: "20"
+      aws_region:
+        type: string
+        required: false
+        default: "eu-central-1"
+
+      preprod_bucket:
+        type: string
+        required: true
+        default: "wesflo-preprod-demo"
+      prod_bucket:
+        type: string
+        required: true
+        default: "wesflo-prod-demo"
+
+      npm_scope:
+        type: string
+        required: false
+        default: "@wesflo"
+      npm_registry:
+        type: string
+        required: false
+        default: "https://npm.pkg.github.com"
+
+      # Environment-Namen für Gates
+      env_preprod:
+        type: string
+        required: false
+        default: "preprod"
+      env_release:
+        type: string
+        required: false
+        default: "release"
+      env_prod_rollout:
+        type: string
+        required: false
+        default: "prod-rollout"
+
+    secrets:
+      NODE_AUTH_TOKEN:
+        required: true
+      AWS_ROLE_ARN_PREPROD:
+        required: true
+      AWS_ROLE_ARN_PROD:
+        required: true
+      # Optional später:
+      # RELEASE_API_URL:
+      #   required: false
+      # RELEASE_API_TOKEN:
+      #   required: false
+
+jobs:
+  test:
+    name: Unit Tests
+    if: ${{ github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'chore(release):') }}
+    uses: ./.github/workflows/test.yml
+    with:
+      workdir: ${{ inputs.workdir }}
+      node_version: ${{ inputs.node_version }}
+      test_command: "npm run test:c"
+
+  build-lib:
+    name: Build NPM Library
+    uses: ./.github/workflows/build.yml
+    with:
+      workdir: ${{ inputs.workdir }}
+      node_version: ${{ inputs.node_version }}
+      build_command: "npm run build"
+      upload_artifacts: true
+      artifact_name: "dist-lib"
+
+  build-iife:
+    name: Build IIFE bundle
+    uses: ./.github/workflows/build.yml
+    with:
+      workdir: ${{ inputs.workdir }}
+      node_version: ${{ inputs.node_version }}
+      build_command: "npm run build:iife"
+      upload_artifacts: true
+      artifact_name: "dist-iife"
+
+  deploy-preprod:
+    name: Deploy preprod (S3)
+    needs: [test, build-iife]
+    uses: ./.github/workflows/deploy-s3.yml
+    with:
+      environment_name: ${{ inputs.env_preprod }}
+      artifact_name: "dist-iife"
+      dist_dir: "dist-iife"
+      bucket: ${{ inputs.preprod_bucket }}
+      region: ${{ inputs.aws_region }}
+      cache_control: "public,max-age=300"
+    secrets:
+      aws_role_arn: ${{ secrets.AWS_ROLE_ARN_PREPROD }}
+
+  deploy-prod:
+    name: Deploy prod (S3)
+    needs: [deploy-preprod]
+    uses: ./.github/workflows/deploy-s3.yml
+    with:
+      environment_name: ${{ inputs.env_release }}
+      artifact_name: "dist-iife"
+      dist_dir: "dist-iife"
+      bucket: ${{ inputs.prod_bucket }}
+      region: ${{ inputs.aws_region }}
+      cache_control: "public,max-age=3600"
+    secrets:
+      aws_role_arn: ${{ secrets.AWS_ROLE_ARN_PROD }}
+
+  publish:
+    name: Publish to Registry
+    needs: [test, build-lib, deploy-preprod]
+    uses: ./.github/workflows/publish.yml
+    with:
+      workdir: ${{ inputs.workdir }}
+      node_version: ${{ inputs.node_version }}
+      npm_scope: ${{ inputs.npm_scope }}
+      npm_registry: ${{ inputs.npm_registry }}
+    secrets:
+      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+
+  activate-release:
+    name: Activate release (write DB version)
+    needs: [deploy-prod]
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.env_prod_rollout }}
+    steps:
+      - name: Activate (demo)
+        run: |
+          echo "Hier wäre dann das CB getriggert. version: ${{ github.run_id }}; attempts: ${{github.run_attempt }}"
+          echo "version: ${{ github.run_id }};"
+          echo "attempts: ${{github.run_attempt }}"
+          echo "repo: ${{github.repository }}"
+#          curl -X POST "${{ secrets.RELEASE_API_URL }}" \
+#            -H "Authorization: Bearer ${{ secrets.RELEASE_API_TOKEN }}" \
+#            -H "Content-Type: application/json" \
+#            -d '{"v":"${{ github.run_id }}.${{github.run_attempt }}","repo":"${{ github.repository }}"}'
