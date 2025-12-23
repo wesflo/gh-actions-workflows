@@ -31,6 +31,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: release
     defaults:
       run:
         working-directory: ${{ inputs.workdir }}
