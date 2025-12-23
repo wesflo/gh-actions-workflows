@@ -18,7 +18,6 @@ on:
       npm_scope:
         type: string
         required: true
-        description: "e.g. @wesflo"
     secrets:
       NODE_AUTH_TOKEN:
         required: true
