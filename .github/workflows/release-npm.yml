@@ -60,29 +60,36 @@ on:
       # RELEASE_API_TOKEN:
       #   required: false
 
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   test:
     name: Unit Tests
-    if: ${{ github.actor != 'github-actions[bot]' && (!contains(github.event.head_commit.message, 'chore(release):') || !contains(github.event.head_commit.message, 'prettify[bot]')) }}
+    if: ${{ github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'chore(release):') && !contains(github.event.head_commit.message, 'prettify[bot]') }}
     uses: ./.github/workflows/test.yml
     with:
       workdir: ${{ inputs.workdir }}
       node_version: ${{ inputs.node_version }}
       test_cmd: "npm run test:c"
 
-  build-lib:
-    name: Build NPM Library
-    uses: ./.github/workflows/build.yml
+  build-package:
+    name: Build NPM Package
+    uses: ./.github/workflows/build-package.yml
     with:
       workdir: ${{ inputs.workdir }}
       node_version: ${{ inputs.node_version }}
       build_cmd: "npm run build"
-      upload_artifacts: true
-      artifact_name: "dist-lib"
+      npm_scope: ${{ inputs.npm_scope }}
+      npm_registry: ${{ inputs.npm_registry }}
 
   publish:
     name: Publish to Registry
-    needs: [test, build-lib]
+    needs: [test, build-package]
     uses: ./.github/workflows/publish.yml
     with:
       workdir: ${{ inputs.workdir }}

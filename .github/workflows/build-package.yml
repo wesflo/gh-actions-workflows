@@ -1,0 +1,115 @@
+name: Build Package
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        type: string
+        required: false
+        default: "20"
+      install_cmd:
+        type: string
+        required: false
+        default: "npm ci --prefer-offline"
+      workdir:
+        type: string
+        required: false
+        default: "."
+      npm_scope:
+        type: string
+        required: true
+      npm_registry:
+        type: string
+        required: true
+      build_cmd:
+        type: string
+        required: false
+        default: "npm run build"
+      pack_cmd:
+        type: string
+        required: false
+        default: "npm pack --silent"
+
+      tarball_artifact:
+        type: string
+        required: false
+        default: "npm-tarball"
+      versionfiles_artifact:
+        type: string
+        required: false
+        default: "npm-versionfiles"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.workdir }}
+
+    steps:
+      - name: Node setup
+        uses: wesflo/gh-actions-workflows/.github/actions/_node-setup@main
+        with:
+          node_version: ${{ inputs.node_version }}
+          workdir: ${{ inputs.workdir }}
+          fetch_depth: "0"
+          npm_registry: ${{ inputs.npm_registry }}
+          npm_scope: ${{ inputs.npm_scope }}
+
+      - name: Determine bump from PR labels
+        id: bump
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = context.sha;
+            
+            const prs = await github.request('GET /repos/{owner}/{repo}/commits/{ref}/pulls', {
+              owner,
+              repo,
+              ref: sha,
+              headers: { accept: 'application/vnd.github.groot-preview+json' }
+            });
+            
+            const pr = prs.data?.[0];
+            const labels = (pr?.labels || []).map(l => l.name);
+            
+            let bump = 'patch';
+            if (labels.includes('release:major')) bump = 'major';
+            else if (labels.includes('release:minor')) bump = 'minor';
+            else if (labels.includes('release:patch')) bump = 'patch';
+            
+            core.setOutput('value', bump);
+
+      - name: Install deps
+        run: ${{ inputs.install_cmd }}
+
+      - name: Bump version (no commit/tag yet)
+        run: |
+          npm version ${{ steps.bump.outputs.value }} --no-git-tag-version
+
+      - name: Build (lib)
+        run: ${{ inputs.build_cmd }}
+
+      - name: Pack tarball
+        id: pack
+        shell: bash
+        run: |
+          TARBALL="$(eval '${{ inputs.pack_cmd }}')"
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+          echo "Created tarball: $TARBALL"
+
+      - name: Upload tarball artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.tarball_artifact }}
+          path: ${{ inputs.workdir }}/${{ steps.pack.outputs.tarball }}
+
+      - name: Upload version files artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.versionfiles_artifact }}
+          path: |
+            ${{ inputs.workdir }}/package.json
+            ${{ inputs.workdir }}/package-lock.json

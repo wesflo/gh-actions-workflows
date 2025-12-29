@@ -60,10 +60,13 @@ on:
       # RELEASE_API_TOKEN:
       #   required: false
 
+permissions:
+  contents: write
+
 jobs:
   test:
     name: Unit Tests
-    if: ${{ github.actor != 'github-actions[bot]' && (!contains(github.event.head_commit.message, 'chore(release):') || !contains(github.event.head_commit.message, 'prettify[bot]')) }}
+    if: ${{ github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'chore(release):') && !contains(github.event.head_commit.message, 'prettify[bot]') }}
     uses: ./.github/workflows/test.yml
     with:
       workdir: ${{ inputs.workdir }}
@@ -72,7 +75,7 @@ jobs:
 
   build-iife:
     name: Build IIFE bundle
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/build-iife.yml
     with:
       workdir: ${{ inputs.workdir }}
       node_version: ${{ inputs.node_version }}
