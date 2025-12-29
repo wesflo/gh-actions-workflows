@@ -28,6 +28,7 @@ on:
 jobs:
   prettier:
     runs-on: ubuntu-latest
+    if: ${{ github.actor != 'github-actions[bot]' && (!contains(github.event.head_commit.message, 'chore(release):') || !contains(github.event.head_commit.message, 'prettify[bot]')) }}
     defaults:
       run:
         working-directory: ${{ inputs.workdir }}
@@ -49,5 +50,5 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           git add ${{ inputs.workdir }}
-          git commit -m "prettify code"
+          git commit -m "prettify:bot"
           git push

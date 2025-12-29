@@ -70,16 +70,6 @@ jobs:
       node_version: ${{ inputs.node_version }}
       test_cmd: "npm run test:c"
 
-  build-lib:
-    name: Build NPM Library
-    uses: ./.github/workflows/build.yml
-    with:
-      workdir: ${{ inputs.workdir }}
-      node_version: ${{ inputs.node_version }}
-      build_cmd: "npm run build"
-      upload_artifacts: true
-      artifact_name: "dist-lib"
-
   build-iife:
     name: Build IIFE bundle
     uses: ./.github/workflows/build.yml
@@ -117,18 +107,6 @@ jobs:
       cache_control: "public,max-age=3600"
     secrets:
       aws_role_arn: ${{ secrets.AWS_ROLE_ARN_PROD }}
-
-  publish:
-    name: Publish to Registry
-    needs: [test, build-lib, deploy-preprod]
-    uses: ./.github/workflows/publish.yml
-    with:
-      workdir: ${{ inputs.workdir }}
-      node_version: ${{ inputs.node_version }}
-      npm_scope: ${{ inputs.npm_scope }}
-      npm_registry: ${{ inputs.npm_registry }}
-    secrets:
-      NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
   activate-release:
     name: Activate release (write DB version)

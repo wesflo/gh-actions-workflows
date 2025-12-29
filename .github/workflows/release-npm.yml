@@ -80,47 +80,9 @@ jobs:
       upload_artifacts: true
       artifact_name: "dist-lib"
 
-  build-iife:
-    name: Build IIFE bundle
-    uses: ./.github/workflows/build.yml
-    with:
-      workdir: ${{ inputs.workdir }}
-      node_version: ${{ inputs.node_version }}
-      build_cmd: "npm run build:iife"
-      upload_artifacts: true
-      artifact_name: "dist-iife"
-
-  deploy-preprod:
-    name: Deploy preprod (S3)
-    needs: [test, build-iife]
-    uses: ./.github/workflows/deploy-s3.yml
-    with:
-      environment_name: ${{ inputs.env_preprod }}
-      artifact_name: "dist-iife"
-      dist_dir: "dist-iife"
-      bucket: ${{ inputs.preprod_bucket }}
-      region: ${{ inputs.aws_region }}
-      cache_control: "public,max-age=300"
-    secrets:
-      aws_role_arn: ${{ secrets.AWS_ROLE_ARN_PREPROD }}
-
-  deploy-prod:
-    name: Deploy prod (S3)
-    needs: [deploy-preprod]
-    uses: ./.github/workflows/deploy-s3.yml
-    with:
-      environment_name: ${{ inputs.env_release }}
-      artifact_name: "dist-iife"
-      dist_dir: "dist-iife"
-      bucket: ${{ inputs.prod_bucket }}
-      region: ${{ inputs.aws_region }}
-      cache_control: "public,max-age=3600"
-    secrets:
-      aws_role_arn: ${{ secrets.AWS_ROLE_ARN_PROD }}
-
   publish:
     name: Publish to Registry
-    needs: [test, build-lib, deploy-preprod]
+    needs: [test, build-lib]
     uses: ./.github/workflows/publish.yml
     with:
       workdir: ${{ inputs.workdir }}
@@ -129,20 +91,3 @@ jobs:
       npm_registry: ${{ inputs.npm_registry }}
     secrets:
       NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-
-  activate-release:
-    name: Activate release (write DB version)
-    needs: [deploy-prod]
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.env_prod_rollout }}
-    steps:
-      - name: Activate (demo)
-        run: |
-          echo "Hier wäre dann das CB getriggert. version: ${{ github.run_id }}; attempts: ${{github.run_attempt }}"
-          echo "version: ${{ github.run_id }};"
-          echo "attempts: ${{github.run_attempt }}"
-          echo "repo: ${{github.repository }}"
-#          curl -X POST "${{ secrets.RELEASE_API_URL }}" \
-#            -H "Authorization: Bearer ${{ secrets.RELEASE_API_TOKEN }}" \
-#            -H "Content-Type: application/json" \
-#            -d '{"v":"${{ github.run_id }}.${{github.run_attempt }}","repo":"${{ github.repository }}"}'
