@@ -135,7 +135,7 @@ jobs:
 
   publish:
     name: Publish to Registry
-    needs: [test, build-package, deploy-preprod]
+    needs: [deploy-preprod]
     uses: ./.github/workflows/publish.yml
     with:
       workdir: ${{ inputs.workdir }}
