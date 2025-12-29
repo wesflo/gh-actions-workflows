@@ -11,15 +11,15 @@ on:
         type: string
         required: false
         default: "."
-      install_command:
+      install_cmd:
         type: string
         required: false
         default: "npm ci --prefer-offline"
-      build_command:
+      build_cmd:
         type: string
         required: false
         default: "npm run build"
-      iife_command:
+      iife_cmd:
         type: string
         required: false
         default: ""
@@ -50,7 +50,7 @@ jobs:
           fetch_depth: ${{ inputs.fetch_depth }}
 
       - name: Build
-        run: ${{ inputs.build_command }}
+        run: ${{ inputs.build_cmd }}
 
       - name: Upload artifacts
         if: ${{ inputs.upload_artifacts }}

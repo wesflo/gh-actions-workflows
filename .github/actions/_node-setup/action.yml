@@ -22,7 +22,7 @@ inputs:
     required: false
     default: ""
 
-  install_command:
+  install_cmd:
     description: "Install command"
     required: false
     default: "npm ci --prefer-offline"
@@ -52,4 +52,4 @@ runs:
     - name: Install dependencies
       shell: bash
       working-directory: ${{ inputs.workdir }}
-      run: ${{ inputs.install_command }}
+      run: ${{ inputs.install_cmd }}

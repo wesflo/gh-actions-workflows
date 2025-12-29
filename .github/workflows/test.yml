@@ -11,11 +11,11 @@ on:
         type: string
         required: false
         default: "."
-      install_command:
+      install_cmd:
         type: string
         required: false
         default: "npm ci --prefer-offline"
-      test_command:
+      test_cmd:
         type: string
         required: false
         default: "npm run test:c"
@@ -38,4 +38,4 @@ jobs:
           workdir: ${{ inputs.workdir }}
 
       - name: Test (coverage)
-        run: ${{ inputs.test_command }}
+        run: ${{ inputs.test_cmd }}

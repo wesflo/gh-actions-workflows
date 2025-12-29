@@ -7,7 +7,7 @@ on:
         type: string
         required: false
         default: "20"
-      install_command:
+      install_cmd:
         type: string
         required: false
         default: "npm ci --prefer-offline"
@@ -21,6 +21,10 @@ on:
       npm_registry:
         type: string
         required: true
+      build_cmd:
+        type: string
+        required: false
+        default: "npm run build"
     secrets:
       NODE_AUTH_TOKEN:
         required: true
@@ -83,10 +87,7 @@ jobs:
           npm version ${{ steps.bump.outputs.value }} --no-git-tag-version
 
       - name: Build (lib)
-        run: npm run build
-
-      - name: Build (iife)
-        run: npm run build:iife
+        run: ${{ inputs.build_cmd }}
 
       - name: Debug NODE_AUTH_TOKEN length
         shell: bash

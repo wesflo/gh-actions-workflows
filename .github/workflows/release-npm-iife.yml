@@ -68,7 +68,7 @@ jobs:
     with:
       workdir: ${{ inputs.workdir }}
       node_version: ${{ inputs.node_version }}
-      test_command: "npm run test:c"
+      test_cmd: "npm run test:c"
 
   build-lib:
     name: Build NPM Library
@@ -76,7 +76,7 @@ jobs:
     with:
       workdir: ${{ inputs.workdir }}
       node_version: ${{ inputs.node_version }}
-      build_command: "npm run build"
+      build_cmd: "npm run build"
       upload_artifacts: true
       artifact_name: "dist-lib"
 
@@ -86,7 +86,7 @@ jobs:
     with:
       workdir: ${{ inputs.workdir }}
       node_version: ${{ inputs.node_version }}
-      build_command: "npm run build:iife"
+      build_cmd: "npm run build:iife"
       upload_artifacts: true
       artifact_name: "dist-iife"
 
