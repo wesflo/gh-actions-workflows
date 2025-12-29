@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Node setup
-        uses: wesflo/gh-actions-workflows/.github/actions/_node-setup@main
+        uses: ./.github/actions/_node-setup@main
         with:
           node_version: ${{ inputs.node_version }}
           workdir: ${{ inputs.workdir }}
