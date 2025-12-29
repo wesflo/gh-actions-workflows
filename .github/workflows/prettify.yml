@@ -1,4 +1,4 @@
-name: publish-npm-package
+name: Prettify
 
 on:
   workflow_call:
@@ -23,12 +23,21 @@ on:
         required: true
       prettier_cmd:
         type: string
+        required: false
         default: "npm run prettier"
+
+permissions:
+  contents: write
 
 jobs:
   prettier:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'chore(release):') && !contains(github.event.head_commit.message, 'prettify[bot]') }}
+    if: >-
+      ${{
+        github.actor != 'github-actions[bot]' &&
+        !contains(github.event.head_commit.message, 'chore(release):') &&
+        !contains(github.event.head_commit.message, 'chore(prettify):')
+      }}
     defaults:
       run:
         working-directory: ${{ inputs.workdir }}
@@ -40,15 +49,26 @@ jobs:
           node_version: ${{ inputs.node_version }}
           workdir: ${{ inputs.workdir }}
           fetch_depth: "0"
-          npm_registry: "https://npm.pkg.github.com"
+          npm_registry: ${{ inputs.npm_registry }}
           npm_scope: ${{ inputs.npm_scope }}
 
-      - name: Run prettier Job
+      - name: Install deps
+        run: ${{ inputs.install_cmd }}
+
+      - name: Run prettier
         run: ${{ inputs.prettier_cmd }}
-      
-      - name: Commit pretty code
+
+      - name: Commit and push if changed
+        shell: bash
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          git add ${{ inputs.workdir }}
-          git commit -m "prettify:bot"
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No formatting changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "chore(prettify): format"
           git push
