@@ -1,0 +1,53 @@
+name: publish-npm-package
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        type: string
+        required: false
+        default: "20"
+      install_cmd:
+        type: string
+        required: false
+        default: "npm ci --prefer-offline"
+      workdir:
+        type: string
+        required: false
+        default: "."
+      npm_scope:
+        type: string
+        required: true
+      npm_registry:
+        type: string
+        required: true
+      prettier_cmd:
+        type: string
+        default: "npm run prettier"
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.workdir }}
+
+    steps:
+      - name: Node setup
+        uses: wesflo/gh-actions-workflows/.github/actions/_node-setup@main
+        with:
+          node_version: ${{ inputs.node_version }}
+          workdir: ${{ inputs.workdir }}
+          fetch_depth: "0"
+          npm_registry: "https://npm.pkg.github.com"
+          npm_scope: ${{ inputs.npm_scope }}
+
+      - name: Run prettier Job
+        run: ${{ inputs.prettier_cmd }}
+      
+      - name: Commit pretty code
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          git add ${{ inputs.workdir }}
+          git commit -m "prettify code"
+          git push
